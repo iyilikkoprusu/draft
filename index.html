@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>İyilik Köprüsü | Akşemseddin İHO</title>
+    <title>İyilik Köprüsü | Dijital Vakıf ve Oyuncak Paylaşım Platformu</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -33,8 +33,9 @@
         }
         #sepet-paneli.open { right: 0; }
         
+        /* Toy Card - Compact Version without Image */
         .toy-card { transition: all 0.3s ease; border: 1px solid #f1f5f9; background: white; }
-        .toy-card:hover { transform: translateY(-8px); border-color: #2563eb; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.05); }
+        .toy-card:hover { transform: translateY(-4px); border-color: #2563eb; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05); }
 
         #splash-screen {
             position: fixed; inset: 0; background: white; z-index: 10000;
@@ -125,19 +126,14 @@
 
     <main class="pt-32 pb-20 px-6 max-w-7xl mx-auto">
         <section id="sec-home" class="section-page active">
-            <div class="grid lg:grid-cols-2 gap-12 items-center mb-24">
-                <div data-aos="fade-right">
-                    <span class="inline-block px-4 py-2 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-full mb-6">TÜBİTAK 4006 - Akşemseddin İHO</span>
-                    <h1 class="serif text-5xl md:text-7xl leading-tight mb-8">Eski Dostlar,<br><span class="italic text-slate-400 underline decoration-blue-600/20 underline-offset-8">Yeni Gülüşler.</span></h1>
-                    <p class="text-slate-500 text-lg leading-relaxed mb-10 pr-8">
-                        İyilik Köprüsü, atıl bekleyen oyuncakları ekonomiye kazandıran bir <b>Dijital Vakıf Modeli</b>'dir.
-                    </p>
-                    <div class="flex gap-4">
-                        <button onclick="showSection('catalog')" class="bg-blue-600 text-white px-10 py-5 rounded-2xl font-bold shadow-2xl shadow-blue-200 transition">Bağışa Başla</button>
-                    </div>
-                </div>
-                <div class="relative" data-aos="fade-left">
-                    <img src="https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?q=80&w=800&auto=format&fit=crop" class="rounded-[4rem] shadow-2xl w-full h-[500px] object-cover" alt="Mutlu Çocuklar">
+            <div class="max-w-3xl mx-auto text-center py-20" data-aos="fade-up">
+                <span class="inline-block px-4 py-2 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-full mb-6">TÜBİTAK 4006 - Akşemseddin İHO</span>
+                <h1 class="serif text-5xl md:text-7xl leading-tight mb-8">Eski Dostlar,<br><span class="italic text-slate-400 underline decoration-blue-600/20 underline-offset-8">Yeni Gülüşler.</span></h1>
+                <p class="text-slate-500 text-xl leading-relaxed mb-12">
+                    İyilik Köprüsü, evlerde atıl bekleyen oyuncakları ekonomiye ve sosyal hayata kazandıran bir <b>Dijital Vakıf Modeli</b>'dir. Toplanan her oyuncak dezenfekte edilip, eksikleri tamamlanarak puan karşılığı yeni sahipleriyle buluşur.
+                </p>
+                <div class="flex gap-4 justify-center">
+                    <button onclick="showSection('catalog')" class="bg-blue-600 text-white px-12 py-6 rounded-2xl font-bold text-lg shadow-2xl shadow-blue-200 hover:scale-[1.03] transition">Bağışa Başla</button>
                 </div>
             </div>
         </section>
@@ -160,7 +156,7 @@
                     <input type="text" id="oyuncak-ara" placeholder="Ara..." class="bg-transparent outline-none text-sm w-full font-semibold">
                 </div>
             </div>
-            <div id="oyuncak-listesi" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div id="oyuncak-listesi" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 </div>
         </section>
     </main>
@@ -230,17 +226,22 @@
             const container = document.getElementById('oyuncak-listesi');
             container.innerHTML = items.map(item => {
                 const f = item.fields;
-                const photo = (f["Fotoğraf"] && f["Fotoğraf"][0]) ? f["Fotoğraf"][0].url : 'https://images.unsplash.com/photo-1558060370-d644479cb6f7?q=80&w=400';
+                // No photo, just data
                 return `
-                    <div class="toy-card p-4 rounded-[2.5rem] flex flex-col h-full" data-aos="fade-up">
-                        <div class="relative aspect-[4/5] rounded-[2rem] overflow-hidden mb-4">
-                            <img src="${photo}" class="w-full h-full object-cover">
+                    <div class="toy-card p-6 rounded-3xl flex flex-col h-full" data-aos="fade-up">
+                        <div class="mb-3">
+                            <span class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">
+                                ${f["Kategori"] || 'Klasik'}
+                            </span>
                         </div>
-                        <h4 class="font-bold px-2">${f["Oyuncak Adı"]}</h4>
-                        <div class="flex justify-between items-end mt-auto pt-4 px-2">
-                            <div><p class="text-xl font-black">${f["Puan Değeri"] || 0} Puan</p></div>
-                            <button onclick="sepeteEkle('${item.id}', '${f["Oyuncak Adı"]}', ${f["Puan Değeri"] || 0}, '${photo}')" 
-                                    class="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center hover:bg-blue-600 transition">
+                        <h4 class="font-bold text-lg text-slate-800 mb-5 line-clamp-2 flex-grow">${f["Oyuncak Adı"]}</h4>
+                        <div class="flex justify-between items-end pt-3 border-t border-slate-100">
+                            <div>
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Değer</p>
+                                <p class="text-2xl font-black text-slate-950">${f["Puan Değeri"] || 0} <span class="text-sm font-bold text-slate-500">Puan</span></p>
+                            </div>
+                            <button onclick="sepeteEkle('${item.id}', '${f["Oyuncak Adı"]}', ${f["Puan Değeri"] || 0})" 
+                                    class="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center hover:bg-blue-600 transition shadow-lg shadow-slate-200">
                                 <i data-lucide="plus"></i>
                             </button>
                         </div>
@@ -250,9 +251,10 @@
         }
 
         // --- SEPET ---
-        window.sepeteEkle = (id, ad, puan, img) => {
+        // Updated sepeteEkle to not require img URL
+        window.sepeteEkle = (id, ad, puan) => {
             if (sepet.find(x => x.id === id)) return;
-            sepet.push({ id, ad, puan, img });
+            sepet.push({ id, ad, puan });
             sepetiGuncelle();
             if (!document.getElementById('sepet-paneli').classList.contains('open')) toggleSepet();
         };
@@ -266,10 +268,12 @@
                 return;
             }
             liste.innerHTML = sepet.map((item, idx) => `
-                <div class="flex items-center gap-4 bg-slate-50 p-3 rounded-2xl">
-                    <img src="${item.img}" class="w-12 h-12 rounded-xl object-cover">
-                    <div class="flex-1 text-xs font-bold">${item.ad}</div>
-                    <button onclick="sepettenCikar(${idx})" class="text-rose-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                <div class="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                    <div class="flex-1">
+                        <div class="text-sm font-bold text-slate-900 line-clamp-1">${item.ad}</div>
+                        <div class="text-xs font-bold text-blue-600">${item.puan} Puan</div>
+                    </div>
+                    <button onclick="sepettenCikar(${idx})" class="text-rose-400 hover:text-rose-600 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                 </div>`).join('');
             document.getElementById('toplam-puan').innerText = sepet.reduce((s, i) => s + i.puan, 0);
             lucide.createIcons();
@@ -304,7 +308,7 @@
                         targets: '#splash-screen', opacity: 0, duration: 500,
                         complete: () => {
                             document.getElementById('splash-screen').style.display = 'none';
-                            AOS.init();
+                            AOS.init({ duration: 800, once: true });
                             lucide.createIcons();
                             katalogYukle();
                         }
