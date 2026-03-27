@@ -1,1 +1,490 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İyilik Köprüsü | Dijital Vakıf ve Oyuncak Paylaşım Platformu</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap');
+        
+        :root { --brand: #0f172a; --accent: #2563eb; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; scroll-behavior: smooth; overflow-x: hidden; }
+        .serif { font-family: 'Playfair Display', serif; }
 
+        .glass-nav { background: rgba(255, 255, 255, 0.85); backdrop-filter: saturate(180%) blur(20px); }
+        .section-page { display: none; }
+        .section-page.active { display: block; animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Auth Modals & Panels */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); z-index: 2000; display: none; align-items: center; justify-content: center; }
+        .modal-overlay.active { display: flex; }
+
+        #sepet-paneli {
+            position: fixed; right: -400px; top: 0; width: 380px; height: 100vh;
+            background: white; z-index: 1000; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: -20px 0 50px rgba(0,0,0,0.05);
+        }
+        #sepet-paneli.open { right: 0; }
+        
+        .toy-card { transition: all 0.3s ease; border: 1px solid #f1f5f9; background: white; }
+        .toy-card:hover { transform: translateY(-8px); border-color: #2563eb; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.05); }
+
+        .gradient-text { background: linear-gradient(45deg, #1e293b, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        /* Splash Screen */
+        #splash-screen {
+            position: fixed; inset: 0; background: white; z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+    </style>
+</head>
+<body class="bg-[#fcfcfd] text-slate-900">
+
+    <!-- SPLASH SCREEN -->
+    <div id="splash-screen">
+        <div id="splash-logo" class="text-center">
+            <h2 class="serif text-3xl font-bold italic text-blue-600 mb-2">İyilik Köprüsü</h2>
+            <div class="w-48 h-1 bg-slate-100 rounded-full overflow-hidden">
+                <div id="load-bar" class="w-0 h-full bg-blue-600"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUTH MODAL (Hesap Açma / Giriş) -->
+    <div id="auth-modal" class="modal-overlay">
+        <div class="bg-white p-10 rounded-[2.5rem] w-full max-w-md shadow-2xl relative">
+            <button onclick="toggleAuthModal()" class="absolute top-6 right-6 text-slate-400 hover:text-slate-900"><i data-lucide="x"></i></button>
+            <h3 class="serif text-3xl mb-2 italic">Hoş Geldiniz</h3>
+            <p class="text-slate-400 text-sm mb-8">İyilik Köprüsü'ne katılarak oyuncak bağış sistemine dahil olun.</p>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1 block">Ad Soyad</label>
+                    <input type="text" id="auth-name" placeholder="Örn: Ahmet Yılmaz" class="w-full bg-slate-50 border-0 p-4 rounded-2xl focus:ring-2 focus:ring-blue-600 outline-none transition">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1 block">Telefon Numarası</label>
+                    <input type="tel" id="auth-phone" placeholder="05xx xxx xx xx" class="w-full bg-slate-50 border-0 p-4 rounded-2xl focus:ring-2 focus:ring-blue-600 outline-none transition">
+                </div>
+                <button onclick="handleAuth()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-bold mt-4 shadow-lg shadow-blue-100 hover:scale-[1.02] transition">Devam Et</button>
+                <p class="text-[10px] text-center text-slate-400 mt-4 leading-relaxed">Giriş yaparak kullanım koşullarını ve dijital vakıf tüzüğümüzü kabul etmiş sayılırsınız.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVIGASYON -->
+    <nav class="glass-nav fixed top-0 w-full z-50 h-20 border-b border-slate-100 px-6">
+        <div class="max-w-7xl mx-auto h-full flex justify-between items-center">
+            <button onclick="showSection('home')" class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-blue-600 rounded-lg rotate-12 flex items-center justify-center text-white font-bold">İ</div>
+                <span class="font-extrabold text-slate-900 tracking-tight text-xl">İyilik Köprüsü</span>
+            </button>
+
+            <ul class="hidden lg:flex gap-10 text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                <li><button onclick="showSection('home')" class="nav-link active hover:text-blue-600 transition">Keşfet</button></li>
+                <li><button onclick="showSection('mission')" class="nav-link hover:text-blue-600 transition">Vakıf Ruhu</button></li>
+                <li><button onclick="showSection('catalog')" class="nav-link hover:text-blue-600 transition">Katalog</button></li>
+            </ul>
+
+            <div class="flex items-center gap-4">
+                <div id="user-info" class="hidden md:flex flex-col items-end mr-2">
+                    <span class="text-[10px] text-slate-400 font-bold uppercase">Hoş Geldin</span>
+                    <span id="display-user-name" class="text-sm font-bold text-slate-900 italic">...</span>
+                </div>
+                
+                <button onclick="toggleSepet()" class="relative p-3 bg-slate-50 rounded-2xl text-slate-600 hover:text-blue-600 transition">
+                    <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                    <span id="sepet-sayac" class="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">0</span>
+                </button>
+
+                <button id="auth-btn" onclick="toggleAuthModal()" class="text-xs font-bold bg-slate-900 text-white px-6 py-3 rounded-2xl hover:opacity-90 transition">Giriş Yap</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- SEPET PANELİ -->
+    <aside id="sepet-paneli" class="flex flex-col">
+        <div class="p-8 border-b flex justify-between items-center">
+            <div>
+                <h3 class="serif text-2xl italic">İyilik Sepeti</h3>
+                <p class="text-xs text-slate-400 mt-1">Paylaştıkça çoğalan mutluluk.</p>
+            </div>
+            <button onclick="toggleSepet()" class="p-2 hover:bg-slate-50 rounded-full transition"><i data-lucide="x"></i></button>
+        </div>
+        
+        <div id="sepet-listesi" class="flex-1 overflow-y-auto p-8 space-y-4">
+            <div class="text-center py-20 text-slate-300 italic">Sepetiniz şu an boş.</div>
+        </div>
+
+        <div class="p-8 bg-slate-50 border-t space-y-4">
+            <div class="flex justify-between items-center">
+                <span class="text-slate-500 font-bold uppercase text-[10px] tracking-widest text-blue-600">Toplam Bağış Puanı</span>
+                <span id="toplam-puan" class="text-3xl font-black text-slate-900">0</span>
+            </div>
+            <button onclick="siparisTamamla()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-bold text-sm shadow-xl shadow-blue-100 hover:scale-[1.02] transition">Siparişi Tamamla</button>
+        </div>
+    </aside>
+
+    <main class="pt-32 pb-20 px-6 max-w-7xl mx-auto">
+        
+        <!-- ANA SAYFA (Genişletilmiş İçerik) -->
+        <section id="sec-home" class="section-page active">
+            <div class="grid lg:grid-cols-2 gap-12 items-center mb-24">
+                <div data-aos="fade-right">
+                    <span class="inline-block px-4 py-2 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-full mb-6">TÜBİTAK 4006 - Akşemseddin İHO</span>
+                    <h1 class="serif text-5xl md:text-7xl leading-tight mb-8">Eski Dostlar,<br><span class="italic text-slate-400 underline decoration-blue-600/20 underline-offset-8">Yeni Gülüşler.</span></h1>
+                    <p class="text-slate-500 text-lg leading-relaxed mb-10 pr-8">
+                        İyilik Köprüsü, sadece bir oyuncak toplama sitesi değildir. Biz, evlerde atıl bekleyen, hatıralarda kalmış ancak hala bir çocuğun hayallerini süsleyebilecek oyuncakları ekonomiye ve sosyal hayata kazandıran bir <strong>Dijital Vakıf Modeli</strong>'yiz. <br><br>
+                        Topladığımız her oyuncağı uzman ellerde dezenfekte ediyor, eksiklerini tamamlıyor ve bu platform üzerinden puan karşılığı yeni sahipleriyle buluşturuyoruz. Bu döngüden elde edilen tüm değerler ise ihtiyaç sahibi çocuklara bağış olarak geri dönüyor.
+                    </p>
+                    <div class="flex gap-4">
+                        <button onclick="showSection('catalog')" class="bg-blue-600 text-white px-10 py-5 rounded-2xl font-bold shadow-2xl shadow-blue-200 hover:translate-y-[-2px] transition">Bağışa Başla</button>
+                        <button onclick="showSection('mission')" class="bg-white border border-slate-100 px-10 py-5 rounded-2xl font-bold hover:bg-slate-50 transition">Hikayemiz</button>
+                    </div>
+                </div>
+                <div class="relative" data-aos="fade-left">
+                    <div class="aspect-square bg-slate-100 rounded-[4rem] rotate-3 absolute inset-0 -z-10 translate-x-4"></div>
+                    <img src="https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?q=80&w=800&auto=format&fit=crop" class="rounded-[4rem] shadow-2xl w-full h-[600px] object-cover -rotate-2" alt="Mutlu Çocuklar">
+                    <div class="absolute -bottom-6 -left-6 bg-white p-8 rounded-[2rem] shadow-xl border border-slate-50 max-w-xs">
+                        <p class="serif italic text-blue-600 text-xl mb-2">"Paylaşmak, en büyük hazinedir."</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">— Proje Vizyonu</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8 mb-24">
+                <div class="p-10 bg-white rounded-[3rem] border border-slate-50 hover:border-blue-100 transition shadow-sm" data-aos="fade-up">
+                    <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6"><i data-lucide="refresh-ccw"></i></div>
+                    <h3 class="font-bold text-xl mb-4 text-slate-900">Sürdürülebilirlik</h3>
+                    <p class="text-slate-500 text-sm leading-relaxed">Tüketim toplumunun getirdiği israfın önüne geçerek, dayanıklı oyuncakların kullanım ömrünü uzatıyoruz. Geleceğe temiz bir dünya bırakıyoruz.</p>
+                </div>
+                <div class="p-10 bg-white rounded-[3rem] border border-slate-50 hover:border-blue-100 transition shadow-sm" data-aos="fade-up" data-aos-delay="100">
+                    <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-6"><i data-lucide="shield-check"></i></div>
+                    <h3 class="font-bold text-xl mb-4 text-slate-900">Güven & Hijyen</h3>
+                    <p class="text-slate-500 text-sm leading-relaxed">Sisteme giren her ürün titizlikle temizlenir. Dijital takip sistemimizle bağışın hangi aşamada olduğunu her an görebilirsiniz.</p>
+                </div>
+                <div class="p-10 bg-white rounded-[3rem] border border-slate-50 hover:border-blue-100 transition shadow-sm" data-aos="fade-up" data-aos-delay="200">
+                    <div class="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mb-6"><i data-lucide="hand-metal"></i></div>
+                    <h3 class="font-bold text-xl mb-4 text-slate-900">Eşit Şans</h3>
+                    <p class="text-slate-500 text-sm leading-relaxed">Her çocuğun kaliteli oyuncaklara erişme hakkı olduğuna inanıyoruz. Puanlama sistemimiz fırsat eşitliği yaratmak üzere tasarlanmıştır.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- VAKIF RUHU (Genişletilmiş İçerik) -->
+        <section id="sec-mission" class="section-page">
+            <div class="max-w-4xl mx-auto space-y-16">
+                <div class="text-center" data-aos="fade-up">
+                    <h2 class="serif text-5xl italic mb-6">İyiliğin Mimarları Olalım</h2>
+                    <p class="text-slate-500 text-lg leading-relaxed">Bir oyuncak değişir, bir dünya güzelleşir. İyilik Köprüsü'nün temelinde yatan değerleri keşfedin.</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-12">
+                    <div class="space-y-8" data-aos="fade-right">
+                        <div>
+                            <h4 class="font-black text-blue-600 uppercase text-[10px] tracking-widest mb-3">01. Vakıf Kültürü</h4>
+                            <p class="text-slate-600 leading-relaxed">Ecdadımızdan miras kalan vakıf geleneğini dijital çağa entegre ediyoruz. Kar amacı gütmeden, tamamen gönüllülük esasıyla, her çocuğun birer vakıf üyesi gibi hissedebileceği bir ekosistem kuruyoruz.</p>
+                        </div>
+                        <div>
+                            <h4 class="font-black text-blue-600 uppercase text-[10px] tracking-widest mb-3">02. Dijital Şeffaflık</h4>
+                            <p class="text-slate-600 leading-relaxed">Platformumuz üzerinden gerçekleştirilen her sipariş, "Teslimat Kodu" sistemiyle güven altına alınır. Elden ödeme sistemiyle hem fiziksel etkileşimi koruyor hem de dijital kayıt tutuyoruz.</p>
+                        </div>
+                    </div>
+                    <div class="bg-slate-900 p-12 rounded-[3rem] text-white space-y-6" data-aos="fade-left">
+                        <h4 class="serif text-2xl italic text-blue-400">Neden Bağış Yapmalıyım?</h4>
+                        <ul class="space-y-4 text-sm text-slate-300">
+                            <li class="flex items-start gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 flex-shrink-0"></i> <span>Gazze'deki kardeşlerimize yardım eli uzatmak için.</span></li>
+                            <li class="flex items-start gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 flex-shrink-0"></i> <span>Yetim çocukların yüzünde bir tebessüm oluşturmak için.</span></li>
+                            <li class="flex items-start gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 flex-shrink-0"></i> <span>Ekolojik ayak izimizi azaltıp doğayı korumak için.</span></li>
+                            <li class="flex items-start gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 flex-shrink-0"></i> <span>Kardeşlik köprülerini güçlendirmek için.</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="bg-white p-12 rounded-[3rem] border border-slate-50 text-center" data-aos="zoom-in">
+                    <h3 class="serif text-3xl italic mb-6">Akşemseddin İmam Hatip Ortaokulu</h3>
+                    <p class="text-slate-500 max-w-2xl mx-auto leading-relaxed italic">
+                        "Bu proje, sadece bir ödev değil; geleceğin iyilik elçilerini yetiştiren bir okuldur. Her öğrenci, bu köprünün bir taşıdır."
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- KATALOG -->
+        <section id="sec-catalog" class="section-page">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+                <div>
+                    <h2 class="serif text-5xl italic mb-2">Oyuncak Vitrini</h2>
+                    <p class="text-slate-400 text-sm">Hayallerine bir adım uzaktasın.</p>
+                </div>
+                <div class="bg-white px-6 py-4 rounded-2xl border border-slate-50 flex items-center gap-3 w-full md:w-80 shadow-sm">
+                    <i data-lucide="search" class="text-slate-300 w-5 h-5"></i>
+                    <input type="text" id="oyuncak-ara" placeholder="Örn: Araba, Peluş..." class="bg-transparent outline-none text-sm w-full font-semibold">
+                </div>
+            </div>
+
+            <div id="oyuncak-listesi" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Ürünler API'den yüklenecek -->
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // --- KONFIGURASYON ---
+        const API_URL = "BURAYA_CLOUDFLARE_WORKER_URL_ADRESİNİ_YAZ";
+        let sepet = [];
+        let tumOyuncaklar = [];
+        let currentUser = JSON.parse(localStorage.getItem('ik_user')) || null;
+
+        // --- AUTH SISTEMI ---
+        function toggleAuthModal() {
+            document.getElementById('auth-modal').classList.toggle('active');
+        }
+
+        function handleAuth() {
+            const name = document.getElementById('auth-name').value.trim();
+            const phone = document.getElementById('auth-phone').value.trim();
+
+            if (!name || !phone) {
+                alert("Lütfen tüm alanları doldurun.");
+                return;
+            }
+
+            currentUser = { name, phone };
+            localStorage.setItem('ik_user', JSON.stringify(currentUser));
+            updateUserUI();
+            toggleAuthModal();
+            
+            anime({
+                targets: '#user-info',
+                opacity: [0, 1],
+                translateY: [10, 0],
+                duration: 800,
+                easing: 'easeOutExpo'
+            });
+        }
+
+        function updateUserUI() {
+            const info = document.getElementById('user-info');
+            const btn = document.getElementById('auth-btn');
+            const displayName = document.getElementById('display-user-name');
+
+            if (currentUser) {
+                info.classList.remove('hidden');
+                btn.innerText = "Çıkış Yap";
+                btn.onclick = () => {
+                    localStorage.removeItem('ik_user');
+                    currentUser = null;
+                    updateUserUI();
+                };
+                displayName.innerText = currentUser.name;
+            } else {
+                info.classList.add('hidden');
+                btn.innerText = "Giriş Yap";
+                btn.onclick = toggleAuthModal;
+            }
+        }
+
+        // --- NAVİGASYON ---
+        function showSection(id) {
+            document.querySelectorAll('.section-page').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('text-blue-600'));
+            
+            const target = document.getElementById('sec-' + id);
+            if (target) target.classList.add('active');
+            
+            // Sepeti kapat
+            document.getElementById('sepet-paneli').classList.remove('open');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (window.AOS) AOS.refresh();
+        }
+
+        function toggleSepet() {
+            document.getElementById('sepet-paneli').classList.toggle('open');
+        }
+
+        // --- KATALOG İŞLEMLERİ ---
+        async function katalogYukle() {
+            const container = document.getElementById('oyuncak-listesi');
+            container.innerHTML = `
+                <div class="col-span-full py-20 text-center">
+                    <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p class="text-slate-400 italic">Katalog verileri çekiliyor...</p>
+                </div>
+            `;
+
+            try {
+                const res = await fetch(`${API_URL}/katalog`);
+                const data = await res.json();
+                tumOyuncaklar = data.records || [];
+                renderKatalog(tumOyuncaklar);
+            } catch (error) {
+                console.error("API Hatası:", error);
+                container.innerHTML = `
+                    <div class="col-span-full p-12 bg-rose-50 rounded-[3rem] text-center text-rose-600 border border-rose-100">
+                        <i data-lucide="wifi-off" class="mx-auto mb-4"></i>
+                        <p class="font-bold">Bağlantı Hatası</p>
+                        <p class="text-xs mt-2 italic">Worker API URL'nizi kontrol edin ve CORS ayarlarının açık olduğundan emin olun.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+            }
+        }
+
+        function renderKatalog(items) {
+            const container = document.getElementById('oyuncak-listesi');
+            container.innerHTML = "";
+
+            if (items.length === 0) {
+                container.innerHTML = `<p class="col-span-full text-center py-20 text-slate-300 italic">Aranan oyuncak bulunamadı.</p>`;
+                return;
+            }
+
+            items.forEach(item => {
+                const f = item.fields;
+                const photo = (f["Fotoğraf"] && f["Fotoğraf"][0]) ? f["Fotoğraf"][0].url : 'https://images.unsplash.com/photo-1558060370-d644479cb6f7?q=80&w=400&auto=format&fit=crop';
+                
+                container.innerHTML += `
+                    <div class="toy-card p-4 rounded-[2.5rem] flex flex-col h-full" data-aos="fade-up">
+                        <div class="relative aspect-[4/5] rounded-[2rem] overflow-hidden bg-slate-50 mb-4">
+                            <img src="${photo}" class="w-full h-full object-cover" alt="${f["Oyuncak Adı"]}">
+                            <div class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[9px] font-black text-blue-600 uppercase tracking-widest">
+                                ${f["Kategori"] || 'Klasik'}
+                            </div>
+                        </div>
+                        <h4 class="font-bold text-slate-800 px-2 line-clamp-1">${f["Oyuncak Adı"]}</h4>
+                        <div class="flex justify-between items-end mt-auto pt-4 px-2">
+                            <div>
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Bağış Değeri</p>
+                                <p class="text-xl font-black text-slate-900">${f["Puan Değeri"] || 0} Puan</p>
+                            </div>
+                            <button onclick="sepeteEkle('${item.id}', '${f["Oyuncak Adı"]}', ${f["Puan Değeri"] || 0}, '${photo}')" 
+                                    class="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center hover:bg-blue-600 transition">
+                                <i data-lucide="plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+        }
+
+        // --- SEPET VE SİPARİŞ ---
+        window.sepeteEkle = function(id, ad, puan, img) {
+            if (sepet.find(x => x.id === id)) return;
+            sepet.push({ id, ad, puan, img });
+            sepetiGuncelle();
+            if (!document.getElementById('sepet-paneli').classList.contains('open')) toggleSepet();
+        };
+
+        function sepetiGuncelle() {
+            const liste = document.getElementById('sepet-listesi');
+            const sayac = document.getElementById('sepet-sayac');
+            const toplamSpan = document.getElementById('toplam-puan');
+
+            sayac.innerText = sepet.length;
+
+            if (sepet.length === 0) {
+                liste.innerHTML = `<div class="text-center py-20 text-slate-300 italic">Sepetiniz boş.</div>`;
+                toplamSpan.innerText = "0";
+                return;
+            }
+
+            liste.innerHTML = sepet.map((item, idx) => `
+                <div class="flex items-center gap-4 bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                    <img src="${item.img}" class="w-12 h-12 rounded-xl object-cover">
+                    <div class="flex-1">
+                        <h5 class="text-xs font-bold text-slate-800 line-clamp-1">${item.ad}</h5>
+                        <p class="text-[10px] text-blue-600 font-bold">${item.puan} Puan</p>
+                    </div>
+                    <button onclick="sepettenCikar(${idx})" class="text-slate-300 hover:text-rose-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                </div>
+            `).join('');
+
+            toplamSpan.innerText = sepet.reduce((s, i) => s + i.puan, 0);
+            lucide.createIcons();
+        }
+
+        window.sepettenCikar = function(idx) {
+            sepet.splice(idx, 1);
+            sepetiGuncelle();
+        };
+
+        async function siparisTamamla() {
+            if (!currentUser) {
+                alert("Lütfen önce giriş yapın.");
+                toggleAuthModal();
+                return;
+            }
+            if (sepet.length === 0) return;
+
+            const teslimatKodu = Math.floor(1000 + Math.random() * 9000).toString();
+            const payload = {
+                "Ad Soyad": currentUser.name,
+                "Telefon": currentUser.phone,
+                "Ürünler": sepet.map(i => i.id),
+                "Teslimat Kodu": teslimatKodu,
+                "Sipariş Durumu": "Beklemede"
+            };
+
+            try {
+                const res = await fetch(`${API_URL}/siparis`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    alert(`HARİKA BİR İYİLİK!\n\nTESLİMAT KODUNUZ: ${teslimatKodu}\n\nLütfen bu kodu not edin. Okulda oyuncağınızı teslim alırken görevli arkadaşımıza bu kodu söylemeniz yeterli olacaktır.`);
+                    sepet = [];
+                    sepetiGuncelle();
+                    toggleSepet();
+                } else {
+                    throw new Error("Sipariş iletilemedi.");
+                }
+            } catch (err) {
+                alert("Hata: " + err.message);
+            }
+        }
+
+        // --- ARAMA ---
+        document.getElementById('oyuncak-ara').addEventListener('input', (e) => {
+            const q = e.target.value.toLowerCase();
+            const filtered = tumOyuncaklar.filter(i => i.fields["Oyuncak Adı"].toLowerCase().includes(q));
+            renderKatalog(filtered);
+        });
+
+        // --- INIT ---
+        window.onload = () => {
+            updateUserUI();
+            anime({
+                targets: '#load-bar',
+                width: '100%',
+                duration: 1500,
+                easing: 'easeInOutQuad',
+                complete: () => {
+                    anime({
+                        targets: '#splash-screen',
+                        opacity: 0,
+                        duration: 500,
+                        complete: () => {
+                            document.getElementById('splash-screen').style.display = 'none';
+                            AOS.init({ duration: 1000, once: true });
+                            lucide.createIcons();
+                            katalogYukle();
+                        }
+                    });
+                }
+            });
+        };
+    </script>
+</body>
+</html>
