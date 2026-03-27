@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>İyilik Köprüsü | Dijital Vakıf ve Oyuncak Paylaşım Platformu</title>
+    <title>İyilik Köprüsü | Dijital Vakıf Platformu</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -13,309 +13,305 @@
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap');
-        
         :root { --brand: #0f172a; --accent: #2563eb; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; scroll-behavior: smooth; overflow-x: hidden; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; scroll-behavior: smooth; overflow-x: hidden; background: #fcfcfd; }
         .serif { font-family: 'Playfair Display', serif; }
-
-        .glass-nav { background: rgba(255, 255, 255, 0.85); backdrop-filter: saturate(180%) blur(20px); }
+        .glass-nav { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border-bottom: 1px solid #f1f5f9; }
         .section-page { display: none; }
-        .section-page.active { display: block; animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-
-        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); z-index: 2000; display: none; align-items: center; justify-content: center; }
-        .modal-overlay.active { display: flex; }
-
-        #sepet-paneli {
-            position: fixed; right: -400px; top: 0; width: 380px; height: 100vh;
-            background: white; z-index: 1000; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: -20px 0 50px rgba(0,0,0,0.05);
-        }
-        #sepet-paneli.open { right: 0; }
+        .section-page.active { display: block; animation: fadeIn 0.6s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Toy Card - Compact Version without Image */
-        .toy-card { transition: all 0.3s ease; border: 1px solid #f1f5f9; background: white; }
-        .toy-card:hover { transform: translateY(-4px); border-color: #2563eb; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05); }
-
-        #splash-screen {
-            position: fixed; inset: 0; background: white; z-index: 10000;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-        }
+        .toy-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid #f1f5f9; background: white; }
+        .toy-card:hover { transform: translateY(-8px); border-color: #2563eb; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.05); }
+        
+        #admin-panel { display: none; background: #fffbeb; border: 1px dashed #f59e0b; padding: 1rem; border-radius: 1rem; margin-bottom: 2rem; }
+        .admin-only { display: none; }
+        .is-admin .admin-only { display: inline-flex; }
+        .is-admin #admin-panel { display: block; }
     </style>
 </head>
-<body class="bg-[#fcfcfd] text-slate-900">
+<body class="text-slate-900">
 
-    <div id="splash-screen">
-        <div id="splash-logo" class="text-center">
-            <h2 class="serif text-3xl font-bold italic text-blue-600 mb-2">İyilik Köprüsü</h2>
-            <div class="w-48 h-1 bg-slate-100 rounded-full overflow-hidden">
-                <div id="load-bar" class="w-0 h-full bg-blue-600"></div>
-            </div>
-        </div>
-    </div>
-
-    <div id="auth-modal" class="modal-overlay">
-        <div class="bg-white p-10 rounded-[2.5rem] w-full max-w-md shadow-2xl relative">
-            <button onclick="toggleAuthModal()" class="absolute top-6 right-6 text-slate-400 hover:text-slate-900"><i data-lucide="x"></i></button>
-            <h3 class="serif text-3xl mb-2 italic">Hoş Geldiniz</h3>
-            <p class="text-slate-400 text-sm mb-8">İyilik Köprüsü'ne katılarak oyuncak bağış sistemine dahil olun.</p>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1 block">Ad Soyad</label>
-                    <input type="text" id="auth-name" placeholder="Örn: Ahmet Yılmaz" class="w-full bg-slate-50 border-0 p-4 rounded-2xl focus:ring-2 focus:ring-blue-600 outline-none transition">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1 block">Telefon Numarası</label>
-                    <input type="tel" id="auth-phone" placeholder="05xx xxx xx xx" class="w-full bg-slate-50 border-0 p-4 rounded-2xl focus:ring-2 focus:ring-blue-600 outline-none transition">
-                </div>
-                <button onclick="handleAuth()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-bold mt-4 shadow-lg shadow-blue-100 hover:scale-[1.02] transition">Devam Et</button>
-            </div>
-        </div>
-    </div>
-
-    <nav class="glass-nav fixed top-0 w-full z-50 h-20 border-b border-slate-100 px-6">
+    <nav class="glass-nav fixed top-0 w-full z-50 h-20 px-6">
         <div class="max-w-7xl mx-auto h-full flex justify-between items-center">
             <button onclick="showSection('home')" class="flex items-center gap-2">
                 <div class="w-8 h-8 bg-blue-600 rounded-lg rotate-12 flex items-center justify-center text-white font-bold">İ</div>
-                <span class="font-extrabold text-slate-900 tracking-tight text-xl">İyilik Köprüsü</span>
+                <span class="font-extrabold text-slate-900 text-xl tracking-tight">İyilik Köprüsü</span>
             </button>
 
-            <ul class="hidden lg:flex gap-10 text-[11px] font-bold uppercase tracking-widest text-slate-400">
-                <li><button onclick="showSection('home')" class="nav-link hover:text-blue-600 transition">Keşfet</button></li>
-                <li><button onclick="showSection('mission')" class="nav-link hover:text-blue-600 transition">Vakıf Ruhu</button></li>
-                <li><button onclick="showSection('catalog')" class="nav-link hover:text-blue-600 transition">Katalog</button></li>
-            </ul>
-
-            <div class="flex items-center gap-4">
-                <div id="user-info" class="hidden md:flex flex-col items-end mr-2">
-                    <span class="text-[10px] text-slate-400 font-bold uppercase">Hoş Geldin</span>
-                    <span id="display-user-name" class="text-sm font-bold text-slate-900 italic">...</span>
-                </div>
-                
-                <button onclick="toggleSepet()" class="relative p-3 bg-slate-50 rounded-2xl text-slate-600 hover:text-blue-600 transition">
-                    <i data-lucide="shopping-cart" class="w-5 h-5"></i>
-                    <span id="sepet-sayac" class="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">0</span>
+            <div class="flex items-center gap-6">
+                <button onclick="toggleSepet()" class="relative p-2 text-slate-600 hover:text-blue-600 transition">
+                    <i data-lucide="shopping-bag"></i>
+                    <span id="sepet-sayac" class="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
                 </button>
-
-                <button id="auth-btn" onclick="toggleAuthModal()" class="text-xs font-bold bg-slate-900 text-white px-6 py-3 rounded-2xl hover:opacity-90 transition">Giriş Yap</button>
+                <div id="user-display" class="hidden text-right">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase leading-none">Profil</p>
+                    <p id="user-name" class="text-xs font-bold italic">...</p>
+                </div>
+                <button id="login-btn" onclick="toggleAuthModal()" class="bg-slate-900 text-white px-5 py-2.5 rounded-xl text-xs font-bold hover:bg-blue-600 transition">Giriş</button>
             </div>
         </div>
     </nav>
 
-    <aside id="sepet-paneli" class="flex flex-col">
-        <div class="p-8 border-b flex justify-between items-center">
-            <div>
-                <h3 class="serif text-2xl italic">İyilik Sepeti</h3>
-            </div>
-            <button onclick="toggleSepet()" class="p-2 hover:bg-slate-50 rounded-full transition"><i data-lucide="x"></i></button>
-        </div>
-        
-        <div id="sepet-listesi" class="flex-1 overflow-y-auto p-8 space-y-4">
-            <div class="text-center py-20 text-slate-300 italic">Sepetiniz şu an boş.</div>
-        </div>
-
-        <div class="p-8 bg-slate-50 border-t space-y-4">
-            <div class="flex justify-between items-center">
-                <span class="text-slate-500 font-bold uppercase text-[10px] tracking-widest text-blue-600">Toplam Puan</span>
-                <span id="toplam-puan" class="text-3xl font-black text-slate-900">0</span>
-            </div>
-            <button onclick="siparisTamamla()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-bold text-sm shadow-xl shadow-blue-100 hover:scale-[1.02] transition">Siparişi Tamamla</button>
-        </div>
-    </aside>
-
     <main class="pt-32 pb-20 px-6 max-w-7xl mx-auto">
+        
         <section id="sec-home" class="section-page active">
-            <div class="max-w-3xl mx-auto text-center py-20" data-aos="fade-up">
-                <span class="inline-block px-4 py-2 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-full mb-6">TÜBİTAK 4006 - Akşemseddin İHO</span>
-                <h1 class="serif text-5xl md:text-7xl leading-tight mb-8">Eski Dostlar,<br><span class="italic text-slate-400 underline decoration-blue-600/20 underline-offset-8">Yeni Gülüşler.</span></h1>
-                <p class="text-slate-500 text-xl leading-relaxed mb-12">
-                    İyilik Köprüsü, evlerde atıl bekleyen oyuncakları ekonomiye ve sosyal hayata kazandıran bir <b>Dijital Vakıf Modeli</b>'dir. Toplanan her oyuncak dezenfekte edilip, eksikleri tamamlanarak puan karşılığı yeni sahipleriyle buluşur.
-                </p>
-                <div class="flex gap-4 justify-center">
-                    <button onclick="showSection('catalog')" class="bg-blue-600 text-white px-12 py-6 rounded-2xl font-bold text-lg shadow-2xl shadow-blue-200 hover:scale-[1.03] transition">Bağışa Başla</button>
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div data-aos="fade-right">
+                    <span class="inline-block px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-full mb-4">TÜBİTAK 4006 Projesi</span>
+                    <h1 class="serif text-6xl leading-tight mb-6">Eski Dostlar,<br><span class="italic text-slate-400">Yeni Gülüşler.</span></h1>
+                    <p class="text-slate-500 text-lg mb-8 leading-relaxed">Oyuncaklarını paylaş, puanlarını topla ve iyilik zincirine katıl. Atıl duran her oyuncak başka bir çocuğun dünyasını aydınlatabilir.</p>
+                    <button onclick="showSection('catalog')" class="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold shadow-xl shadow-blue-100 hover:scale-105 transition">Kataloğu Keşfet</button>
                 </div>
-            </div>
-        </section>
-
-        <section id="sec-mission" class="section-page">
-            <div class="max-w-4xl mx-auto text-center py-20">
-                <h2 class="serif text-5xl italic mb-6">İyiliğin Mimarları Olalım</h2>
-                <p class="text-slate-500 text-lg">Ecdadımızdan miras kalan vakıf geleneğini dijital çağa entegre ediyoruz.</p>
+                <div class="relative" data-aos="zoom-in">
+                    <img src="https://images.unsplash.com/photo-1531303435785-3853ba035cda?q=80&w=800" class="rounded-[3rem] shadow-2xl grayscale-[20%] hover:grayscale-0 transition duration-700" alt="Bağış">
+                </div>
             </div>
         </section>
 
         <section id="sec-catalog" class="section-page">
-            <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
-                <div>
-                    <h2 class="serif text-5xl italic mb-2">Oyuncak Vitrini</h2>
-                    <p class="text-slate-400 text-sm">Hayallerine bir adım uzaktasın.</p>
-                </div>
-                <div class="bg-white px-6 py-4 rounded-2xl border border-slate-50 flex items-center gap-3 w-full md:w-80 shadow-sm">
-                    <i data-lucide="search" class="text-slate-300 w-5 h-5"></i>
-                    <input type="text" id="oyuncak-ara" placeholder="Ara..." class="bg-transparent outline-none text-sm w-full font-semibold">
+            <div id="admin-panel">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-bold text-amber-800 flex items-center gap-2"><i data-lucide="shield-check"></i> Yönetici Paneli Aktif</h3>
+                    <button onclick="yeniUrunEkle()" class="bg-amber-600 text-white px-4 py-2 rounded-lg text-xs font-bold">Yeni Ürün Ekle</button>
                 </div>
             </div>
-            <div id="oyuncak-listesi" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+            <div class="flex justify-between items-end mb-12">
+                <h2 class="serif text-4xl italic">Oyuncak Vitrini</h2>
+                <div class="flex gap-4">
+                    <input type="text" id="search-input" placeholder="Oyuncak ara..." class="px-4 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-600 outline-none">
+                </div>
+            </div>
+            
+            <div id="catalog-container" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
                 </div>
         </section>
+
     </main>
 
-    <script>
-        // --- API KONFIGURASYONU ---
-        const API_URL = "https://iyilikkoprusu-api.eensarerkul.workers.dev";
-        
-        let sepet = [];
-        let tumOyuncaklar = [];
-        let currentUser = JSON.parse(localStorage.getItem('ik_user')) || null;
+    <div id="auth-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] hidden items-center justify-center p-6">
+        <div class="bg-white p-8 rounded-[2rem] w-full max-w-sm shadow-2xl">
+            <h3 class="serif text-2xl mb-6 italic">Giriş Yap</h3>
+            <input type="text" id="auth-name" placeholder="Ad Soyad" class="w-full mb-4 p-4 bg-slate-50 rounded-2xl outline-none border-none focus:ring-2 focus:ring-blue-600 transition">
+            <input type="tel" id="auth-phone" placeholder="Telefon (05xx...)" class="w-full mb-6 p-4 bg-slate-50 rounded-2xl outline-none border-none focus:ring-2 focus:ring-blue-600 transition">
+            <button onclick="handleLogin()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-100">Devam Et</button>
+            <button onclick="toggleAuthModal()" class="w-full mt-2 text-slate-400 text-xs font-bold py-2">Vazgeç</button>
+        </div>
+    </div>
 
-        // --- AUTH ---
-        function toggleAuthModal() { document.getElementById('auth-modal').classList.toggle('active'); }
-        function handleAuth() {
-            const name = document.getElementById('auth-name').value.trim();
-            const phone = document.getElementById('auth-phone').value.trim();
-            if (!name || !phone) { alert("Lütfen alanları doldurun."); return; }
-            currentUser = { name, phone };
-            localStorage.setItem('ik_user', JSON.stringify(currentUser));
+    <aside id="sepet-sidebar" class="fixed right-[-400px] top-0 w-[380px] h-full bg-white z-[60] shadow-2xl transition-all duration-500 flex flex-col">
+        <div class="p-8 border-b flex justify-between items-center">
+            <h3 class="serif text-xl italic">İyilik Sepetin</h3>
+            <button onclick="toggleSepet()" class="p-2"><i data-lucide="x"></i></button>
+        </div>
+        <div id="sepet-items" class="flex-1 overflow-y-auto p-6 space-y-4"></div>
+        <div class="p-8 bg-slate-50 border-t">
+            <div class="flex justify-between mb-6">
+                <span class="font-bold text-slate-400 uppercase text-[10px]">Toplam Puan</span>
+                <span id="total-puan" class="text-2xl font-black">0</span>
+            </div>
+            <button onclick="siparisVer()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold">Bağışı Onayla</button>
+        </div>
+    </aside>
+
+    <script>
+        // API Bilgileri
+        const API_KEY = "patMISUVizhCfvRsg";
+        const API_URL = "https://iyilikkoprusu-api.eensarerkul.workers.dev";
+        const ADMIN_NUMBERS = ["05051234567"]; // Yönetici telefonlarını buraya ekle
+
+        let currentUrunler = [];
+        let sepet = [];
+        let user = JSON.parse(localStorage.getItem('ik_user')) || null;
+
+        // Başlatıcı
+        window.onload = () => {
+            AOS.init();
+            lucide.createIcons();
+            updateUserUI();
+            fetchCatalog();
+        };
+
+        // API Fonksiyonları
+        async function fetchCatalog() {
+            const container = document.getElementById('catalog-container');
+            container.innerHTML = '<div class="col-span-full text-center py-20 opacity-50 italic">Katalog yükleniyor...</div>';
+            
+            try {
+                const response = await fetch(`${API_URL}/katalog`, {
+                    headers: { 'Authorization': `Bearer ${API_KEY}` }
+                });
+                const data = await response.json();
+                currentUrunler = data.records || [];
+                renderCatalog(currentUrunler);
+            } catch (error) {
+                console.error("Hata:", error);
+                container.innerHTML = '<div class="col-span-full text-rose-500 text-center py-20">API bağlantısı kurulamadı.</div>';
+            }
+        }
+
+        function renderCatalog(items) {
+            const container = document.getElementById('catalog-container');
+            container.innerHTML = items.map(item => {
+                const f = item.fields;
+                const photo = (f["Fotoğraf"] && f["Fotoğraf"][0]) ? f["Fotoğraf"][0].url : 'https://images.unsplash.com/photo-1558060370-d644479cb6f7?q=80&w=400';
+                
+                return `
+                <div class="toy-card p-4 rounded-[2.5rem] flex flex-col h-full" data-aos="fade-up">
+                    <div class="relative aspect-[4/5] rounded-[2rem] overflow-hidden mb-4 bg-slate-100">
+                        <img src="${photo}" class="w-full h-full object-cover">
+                        <div class="admin-only absolute top-3 right-3 flex gap-2">
+                            <button onclick="urunSil('${item.id}')" class="bg-white/90 p-2 rounded-xl text-rose-500 hover:bg-rose-500 hover:text-white transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </div>
+                    </div>
+                    <div class="px-2">
+                        <span class="text-[9px] font-black uppercase tracking-widest text-blue-600 mb-1 block">${f["Kategori"] || 'Genel'}</span>
+                        <h4 class="font-bold text-slate-800 mb-4 line-clamp-1">${f["Oyuncak Adı"]}</h4>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xl font-black">${f["Puan Değeri"] || 0} <span class="text-[10px] text-slate-400">Puan</span></span>
+                            <button onclick="sepeteEkle('${item.id}', '${f["Oyuncak Adı"]}', ${f["Puan Değeri"]}, '${photo}')" class="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center hover:bg-blue-600 transition">
+                                <i data-lucide="plus" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        // Sepet İşlemleri
+        function sepeteEkle(id, ad, puan, img) {
+            if(sepet.find(x => x.id === id)) return;
+            sepet.push({id, ad, puan, img});
+            updateSepetUI();
+            if(!document.getElementById('sepet-sidebar').classList.contains('right-0')) toggleSepet();
+        }
+
+        function updateSepetUI() {
+            const container = document.getElementById('sepet-items');
+            document.getElementById('sepet-sayac').innerText = sepet.length;
+            
+            if(sepet.length === 0) {
+                container.innerHTML = '<p class="text-center py-20 text-slate-300 italic">Sepetin boş.</p>';
+            } else {
+                container.innerHTML = sepet.map((x, i) => `
+                    <div class="flex items-center gap-4 bg-slate-50 p-3 rounded-2xl">
+                        <img src="${x.img}" class="w-12 h-12 rounded-lg object-cover">
+                        <div class="flex-1 font-bold text-xs">${x.ad}</div>
+                        <button onclick="sepettenCikar(${i})" class="text-rose-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </div>
+                `).join('');
+            }
+            document.getElementById('total-puan').innerText = sepet.reduce((a, b) => a + b.puan, 0);
+            lucide.createIcons();
+        }
+
+        function sepettenCikar(index) {
+            sepet.splice(index, 1);
+            updateSepetUI();
+        }
+
+        async function siparisVer() {
+            if(!user) { toggleAuthModal(); return; }
+            if(sepet.length === 0) return;
+
+            const t_kodu = Math.floor(1000 + Math.random() * 9000).toString();
+            
+            try {
+                const response = await fetch(`${API_URL}/siparis`, {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'Content-Type': 'application/json' 
+                    },
+                    body: JSON.stringify({
+                        "Ad Soyad": user.name,
+                        "Telefon": user.phone,
+                        "Ürünler": sepet.map(x => x.id),
+                        "Teslimat Kodu": t_kodu,
+                        "Durum": "Hazırlanıyor"
+                    })
+                });
+
+                if(response.ok) {
+                    alert(`İyilik Talebin Alındı!\nTeslimat Kodun: ${t_kodu}`);
+                    sepet = [];
+                    updateSepetUI();
+                    toggleSepet();
+                }
+            } catch (e) { alert("Sipariş sırasında bir hata oluştu."); }
+        }
+
+        // Kullanıcı & Admin Yönetimi
+        function handleLogin() {
+            const name = document.getElementById('auth-name').value;
+            const phone = document.getElementById('auth-phone').value;
+            if(!name || !phone) return;
+
+            user = { name, phone };
+            localStorage.setItem('ik_user', JSON.stringify(user));
             updateUserUI();
             toggleAuthModal();
         }
 
         function updateUserUI() {
-            const info = document.getElementById('user-info');
-            const btn = document.getElementById('auth-btn');
-            const displayName = document.getElementById('display-user-name');
-            if (currentUser) {
-                info.classList.remove('hidden');
-                btn.innerText = "Çıkış Yap";
-                btn.onclick = () => { localStorage.removeItem('ik_user'); currentUser = null; updateUserUI(); };
-                displayName.innerText = currentUser.name;
+            const display = document.getElementById('user-display');
+            const loginBtn = document.getElementById('login-btn');
+            
+            if(user) {
+                display.classList.remove('hidden');
+                document.getElementById('user-name').innerText = user.name;
+                loginBtn.innerText = "Çıkış";
+                loginBtn.onclick = logout;
+                
+                // Admin Kontrolü
+                if(ADMIN_NUMBERS.includes(user.phone)) {
+                    document.body.classList.add('is-admin');
+                }
             } else {
-                info.classList.add('hidden');
-                btn.innerText = "Giriş Yap";
-                btn.onclick = toggleAuthModal;
+                display.classList.add('hidden');
+                loginBtn.innerText = "Giriş";
+                loginBtn.onclick = toggleAuthModal;
+                document.body.classList.remove('is-admin');
             }
         }
 
-        // --- NAV ---
+        function logout() {
+            localStorage.removeItem('ik_user');
+            user = null;
+            updateUserUI();
+        }
+
+        // Arayüz Yardımcıları
         function showSection(id) {
             document.querySelectorAll('.section-page').forEach(s => s.classList.remove('active'));
-            const target = document.getElementById('sec-' + id);
-            if (target) target.classList.add('active');
-            document.getElementById('sepet-paneli').classList.remove('open');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            if (window.AOS) AOS.refresh();
+            document.getElementById('sec-' + id).classList.add('active');
+            window.scrollTo(0,0);
         }
-        function toggleSepet() { document.getElementById('sepet-paneli').classList.toggle('open'); }
 
-        // --- API DATA ---
-        async function katalogYukle() {
-            const container = document.getElementById('oyuncak-listesi');
+        function toggleAuthModal() {
+            const m = document.getElementById('auth-modal');
+            m.classList.toggle('hidden');
+            m.classList.toggle('flex');
+        }
+
+        function toggleSepet() {
+            const s = document.getElementById('sepet-sidebar');
+            s.style.right = s.style.right === '0px' ? '-400px' : '0px';
+        }
+
+        // Admin İşlemleri (Örnek Fonksiyonlar)
+        async function urunSil(id) {
+            if(!confirm("Bu ürünü silmek istediğine emin misin?")) return;
             try {
-                const res = await fetch(`${API_URL}/katalog`);
-                const data = await res.json();
-                tumOyuncaklar = data.records || [];
-                renderKatalog(tumOyuncaklar);
-            } catch (error) {
-                console.error("API Hatası:", error);
-                container.innerHTML = `<div class="col-span-full p-12 text-center text-rose-600">Bağlantı Hatası! API adresini kontrol edin.</div>`;
-            }
-        }
-
-        function renderKatalog(items) {
-            const container = document.getElementById('oyuncak-listesi');
-            container.innerHTML = items.map(item => {
-                const f = item.fields;
-                // No photo, just data
-                return `
-                    <div class="toy-card p-6 rounded-3xl flex flex-col h-full" data-aos="fade-up">
-                        <div class="mb-3">
-                            <span class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">
-                                ${f["Kategori"] || 'Klasik'}
-                            </span>
-                        </div>
-                        <h4 class="font-bold text-lg text-slate-800 mb-5 line-clamp-2 flex-grow">${f["Oyuncak Adı"]}</h4>
-                        <div class="flex justify-between items-end pt-3 border-t border-slate-100">
-                            <div>
-                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Değer</p>
-                                <p class="text-2xl font-black text-slate-950">${f["Puan Değeri"] || 0} <span class="text-sm font-bold text-slate-500">Puan</span></p>
-                            </div>
-                            <button onclick="sepeteEkle('${item.id}', '${f["Oyuncak Adı"]}', ${f["Puan Değeri"] || 0})" 
-                                    class="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center hover:bg-blue-600 transition shadow-lg shadow-slate-200">
-                                <i data-lucide="plus"></i>
-                            </button>
-                        </div>
-                    </div>`;
-            }).join('');
-            lucide.createIcons();
-        }
-
-        // --- SEPET ---
-        // Updated sepeteEkle to not require img URL
-        window.sepeteEkle = (id, ad, puan) => {
-            if (sepet.find(x => x.id === id)) return;
-            sepet.push({ id, ad, puan });
-            sepetiGuncelle();
-            if (!document.getElementById('sepet-paneli').classList.contains('open')) toggleSepet();
-        };
-
-        function sepetiGuncelle() {
-            const liste = document.getElementById('sepet-listesi');
-            document.getElementById('sepet-sayac').innerText = sepet.length;
-            if (sepet.length === 0) {
-                liste.innerHTML = `<div class="text-center py-20 text-slate-300 italic">Sepetiniz boş.</div>`;
-                document.getElementById('toplam-puan').innerText = "0";
-                return;
-            }
-            liste.innerHTML = sepet.map((item, idx) => `
-                <div class="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                    <div class="flex-1">
-                        <div class="text-sm font-bold text-slate-900 line-clamp-1">${item.ad}</div>
-                        <div class="text-xs font-bold text-blue-600">${item.puan} Puan</div>
-                    </div>
-                    <button onclick="sepettenCikar(${idx})" class="text-rose-400 hover:text-rose-600 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                </div>`).join('');
-            document.getElementById('toplam-puan').innerText = sepet.reduce((s, i) => s + i.puan, 0);
-            lucide.createIcons();
-        }
-
-        window.sepettenCikar = (idx) => { sepet.splice(idx, 1); sepetiGuncelle(); };
-
-        async function siparisTamamla() {
-            if (!currentUser) { alert("Lütfen önce giriş yapın."); toggleAuthModal(); return; }
-            if (sepet.length === 0) return;
-            const teslimatKodu = Math.floor(1000 + Math.random() * 9000).toString();
-            try {
-                const res = await fetch(`${API_URL}/siparis`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ "Ad Soyad": currentUser.name, "Telefon": currentUser.phone, "Ürünler": sepet.map(i => i.id), "Teslimat Kodu": teslimatKodu, "Sipariş Durumu": "Beklemede" })
+                await fetch(`${API_URL}/katalog/${id}`, { 
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${API_KEY}` }
                 });
-                if (res.ok) {
-                    alert(`Sipariş Alındı!\nTeslimat Kodunuz: ${teslimatKodu}`);
-                    sepet = []; sepetiGuncelle(); toggleSepet();
-                }
-            } catch (err) { alert("Hata oluştu."); }
+                fetchCatalog();
+            } catch (e) { alert("Silme hatası."); }
         }
-
-        // --- INIT ---
-        window.onload = () => {
-            updateUserUI();
-            anime({
-                targets: '#load-bar', width: '100%', duration: 1000, easing: 'easeInOutQuad',
-                complete: () => {
-                    anime({
-                        targets: '#splash-screen', opacity: 0, duration: 500,
-                        complete: () => {
-                            document.getElementById('splash-screen').style.display = 'none';
-                            AOS.init({ duration: 800, once: true });
-                            lucide.createIcons();
-                            katalogYukle();
-                        }
-                    });
-                }
-            });
-        };
     </script>
 </body>
 </html>
